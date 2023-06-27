@@ -13,9 +13,4 @@ public class AppController : MonoBehaviour
         GenerateCommand.Execute();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
