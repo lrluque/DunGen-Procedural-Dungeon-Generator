@@ -7,3 +7,6 @@ DunGen utilizes different algorithms to generate unique and challenging dungeons
 or educational projects, providing users with engaging and visually stimulating experiences. The intuitive interface and customizable features make it accessible for developers of all 
 skill levels to generate intricate dungeons effortlessly.
 
+![Dungeon Generator Preview v1 0 0](https://github.com/lrluque/DunGen-Procedural-Dungeon-Generator/assets/16742563/9b2c660b-998f-4879-8f48-c60068e6e56e)
+
+
