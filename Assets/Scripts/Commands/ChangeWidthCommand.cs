@@ -5,19 +5,19 @@ using UnityEngine;
 
 public class ChangeWidthCommand : iCommand
 {
-    public DungeonGenerator dungeonGenerator;
+    public Generator generator;
     public Slider sliderWidth;
 
-    public ChangeWidthCommand(DungeonGenerator generator, Slider slider)
+    public ChangeWidthCommand(Generator generator, Slider slider)
     {
-        dungeonGenerator = generator;
+        this.generator = generator;
         sliderWidth = slider;
     }
 
 
     public void Execute()
     {
-        dungeonGenerator.setWidth((int)sliderWidth.value);
+        generator.SetWidth((int)sliderWidth.value);
     }
 
 

@@ -5,17 +5,17 @@ using UnityEngine;
 
 public class ChangeHeightCommand : iCommand
 {
-    public DungeonGenerator dungeonGenerator;
+    public Generator generator;
     public Slider sliderHeight;
 
-    public ChangeHeightCommand(DungeonGenerator generator, Slider slider)
+    public ChangeHeightCommand(Generator generator, Slider slider)
     {
-        dungeonGenerator = generator;
+        this.generator = generator;
         sliderHeight = slider;
     }
 
     public void Execute()
     {
-        dungeonGenerator.setHeight((int)sliderHeight.value);
+        generator.SetHeight((int)sliderHeight.value);
     }
 }
