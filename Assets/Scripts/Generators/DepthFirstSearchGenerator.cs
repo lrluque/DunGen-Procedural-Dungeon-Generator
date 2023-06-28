@@ -97,5 +97,4 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
         this._size.y = height;
     }
 
-
 }

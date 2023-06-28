@@ -754,8 +754,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2121193820}
-  m_Father: {fileID: 1138634732}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &899266131
 GameObject:
@@ -1321,7 +1321,7 @@ GameObject:
   - component: {fileID: 1138634735}
   - component: {fileID: 1138634736}
   m_Layer: 0
-  m_Name: Manager
+  m_Name: App
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1338,9 +1338,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1857573562}
-  - {fileID: 865455020}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1370,6 +1368,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd94ea1aa6ab44944804caa5f467e380, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sliderWidth: {fileID: 1704425042}
+  sliderHeight: {fileID: 1439448766}
+  generatorController: {fileID: 1857573561}
+  playerController: {fileID: 865455019}
+  UI: {fileID: 1042946798}
+  app: {fileID: 1138634730}
 --- !u!1001 &1190269029
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1969,7 +1973,6 @@ GameObject:
   - component: {fileID: 1619303433}
   - component: {fileID: 1619303432}
   - component: {fileID: 1619303431}
-  - component: {fileID: 1619303434}
   m_Layer: 5
   m_Name: Generate-BT
   m_TagString: Untagged
@@ -2042,9 +2045,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1619303434}
-        m_TargetAssemblyTypeName: GenerateButton, Assembly-CSharp
-        m_MethodName: Press
+      - m_Target: {fileID: 1138634736}
+        m_TargetAssemblyTypeName: AppController, Assembly-CSharp
+        m_MethodName: Generate
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2092,21 +2095,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1619303429}
   m_CullTransparentMesh: 1
---- !u!114 &1619303434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1619303429}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66d4d4c7a85b0714c97f25a1deb6717d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  manager: {fileID: 1138634730}
-  sliderWidth: {fileID: 1704425042}
-  sliderHeight: {fileID: 1439448766}
 --- !u!1 &1686564913
 GameObject:
   m_ObjectHideFlags: 0
@@ -2467,8 +2455,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 963194228}
-  m_Father: {fileID: 1138634732}
-  m_RootOrder: 0
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1931497783
 GameObject:
@@ -2493,13 +2481,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1931497783}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1961466821
 GameObject:
@@ -2513,7 +2501,6 @@ GameObject:
   - component: {fileID: 1961466825}
   - component: {fileID: 1961466824}
   - component: {fileID: 1961466823}
-  - component: {fileID: 1961466826}
   m_Layer: 5
   m_Name: Play-BT
   m_TagString: Untagged
@@ -2586,9 +2573,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1961466826}
-        m_TargetAssemblyTypeName: PlayButton, Assembly-CSharp
-        m_MethodName: Press
+      - m_Target: {fileID: 1138634736}
+        m_TargetAssemblyTypeName: AppController, Assembly-CSharp
+        m_MethodName: Play
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2636,21 +2623,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961466821}
   m_CullTransparentMesh: 1
---- !u!114 &1961466826
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1961466821}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5264008fab77994fbee5db1066a2978, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  generatorController: {fileID: 1857573561}
-  playerController: {fileID: 865455019}
-  UI: {fileID: 1042946798}
 --- !u!1 &2082515783
 GameObject:
   m_ObjectHideFlags: 0
@@ -2717,7 +2689,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &2121193820 stripped
 Transform:
