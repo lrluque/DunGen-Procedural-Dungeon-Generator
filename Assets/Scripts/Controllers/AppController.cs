@@ -8,14 +8,16 @@ public class AppController : MonoBehaviour
 
     public Generator generator;
     public Slider sliderWidth, sliderHeight;
-    public GameObject generatorController, playerController, UI, app;
+    public GameObject generatorController, playerController, generationUI, playUI, app, spawnLocation;
+    public GameObject[] rooms;
+    
     
     private iCommand _command;
 
 
     void Start()
     {
-        generator = this.GetComponent<Generator>();
+        generator = new DepthFirstSearchGenerator(rooms: rooms, spawnLocation: spawnLocation);
         Generate();
     }
 
@@ -26,10 +28,27 @@ public class AppController : MonoBehaviour
     }
 
     public void Play(){
-        _command = new PlayCommand(generatorController: generatorController, playerController: playerController);
+        Cursor.lockState = CursorLockMode.Locked;
+        _command = new PlayCommand(generatorController: generatorController, playerController: playerController, generationUI: generationUI, playUI: playUI);
         _command.Execute();
     }
+
+    public void Quit(){
+        Application.Quit();
+    }
     
+    void Update()
+    {
+        if (playerController.activeSelf){
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Cursor.lockState = CursorLockMode.Confined;
+                GameObject.Find("FirstPersonController").transform.position = new Vector3(0, 1, 0);
+                _command = new PlayCommand(generatorController: generatorController, playerController: playerController, generationUI: generationUI, playUI: playUI);
+                _command.Execute();
+            }
+        }
+    }
 
 
 }

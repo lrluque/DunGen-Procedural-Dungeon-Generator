@@ -26,6 +26,5 @@ public class CameraController : MonoBehaviour
         newPosition.z += verticalMovement * moveSpeed * Time.deltaTime;
         newPosition.y -= zoomInput * moveSpeed * Time.deltaTime;
         transform.position = newPosition;
-
     }
 }
