@@ -22,8 +22,8 @@ public class CameraController : MonoBehaviour
         float verticalMovement = Input.GetAxis("Vertical") * 10f;
         float zoomInput = Input.GetAxis("Mouse ScrollWheel") * 100f;
         Vector3 newPosition = transform.position;
-        newPosition.x += horizontalMovement * moveSpeed * Time.deltaTime;
-        newPosition.z += verticalMovement * moveSpeed * Time.deltaTime;
+        newPosition.z -= horizontalMovement * moveSpeed * Time.deltaTime;
+        newPosition.x += verticalMovement * moveSpeed * Time.deltaTime;
         newPosition.y -= zoomInput * moveSpeed * Time.deltaTime;
         transform.position = newPosition;
     }

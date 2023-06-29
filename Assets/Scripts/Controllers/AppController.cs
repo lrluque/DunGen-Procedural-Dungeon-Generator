@@ -17,7 +17,7 @@ public class AppController : MonoBehaviour
 
     void Start()
     {
-        generator = new DepthFirstSearchGenerator(rooms: rooms, spawnLocation: spawnLocation);
+        generator = new BSPDungeonGenerator(rooms: rooms, spawnLocation: spawnLocation, roomDensity: 10);
         Generate();
     }
 

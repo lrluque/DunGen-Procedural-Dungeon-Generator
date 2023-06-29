@@ -105,4 +105,9 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
         this._size.y = height;
     }
 
+    public Board GetBoard()
+    {
+        return this._board;
+    }
+
 }
