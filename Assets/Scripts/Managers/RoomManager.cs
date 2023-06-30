@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RoomController : MonoBehaviour
+public class RoomManager : MonoBehaviour
 {
 
     // Up Down Right Left -> 0 1 2 3

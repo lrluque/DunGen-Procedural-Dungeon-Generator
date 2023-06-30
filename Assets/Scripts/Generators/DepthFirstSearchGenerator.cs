@@ -81,7 +81,7 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
                     var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
                     var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
                     GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
-                    roomInstance.GetComponent<RoomController>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
+                    roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
                     roomInstance.transform.SetParent(_spawnLocation.transform, false);
                 }
             }

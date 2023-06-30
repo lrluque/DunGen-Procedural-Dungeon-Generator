@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraController : MonoBehaviour
+public class CameraManager : MonoBehaviour
 {
     public float moveSpeed = 10f;
     public float zoomSpeed = 10f;
