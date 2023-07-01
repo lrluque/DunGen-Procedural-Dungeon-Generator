@@ -18,6 +18,7 @@ public class ControllerManager : MonoBehaviour, iObserver
             _controllers.Add(controller.name, controller);
         }
         _activeController = "PlayController";
+        Cursor.lockState = CursorLockMode.Confined;
         SetActive("GenerationController");
     }
 

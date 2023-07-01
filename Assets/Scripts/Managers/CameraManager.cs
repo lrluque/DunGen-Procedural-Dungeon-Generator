@@ -2,29 +2,56 @@ using UnityEngine;
 
 public class CameraManager : MonoBehaviour
 {
-    public float moveSpeed = 10f;
-    public float zoomSpeed = 10f;
+    [SerializeField] private float _normalSpeed;
+    [SerializeField] private float _fastSpeed;
+    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _moveTime;
+    [SerializeField] private Transform _cameraTransform;
 
-    public Vector3 minBounds;
-    public Vector3 maxBounds;
+    [SerializeField] private Vector3 _newPosition;
+    [SerializeField] private Vector3 _dragOrigin;
+    [SerializeField] private Vector3 _dragCurrent;
 
-    private Camera mainCamera;
-
-    private void Awake()
+    void Start()
     {
-        mainCamera = Camera.main;
+        _newPosition = transform.position;
     }
 
-    private void Update()
+    void Update()
     {
-        // Camera movement
-        float horizontalMovement = Input.GetAxis("Horizontal") * 10f;
-        float verticalMovement = Input.GetAxis("Vertical") * 10f;
-        float zoomInput = Input.GetAxis("Mouse ScrollWheel") * 100f;
-        Vector3 newPosition = transform.position;
-        newPosition.z -= horizontalMovement * moveSpeed * Time.deltaTime;
-        newPosition.x += verticalMovement * moveSpeed * Time.deltaTime;
-        newPosition.y -= zoomInput * moveSpeed * Time.deltaTime;
-        transform.position = newPosition;
+        HandleMovementInput();
     }
+
+    void HandleMovementInput()
+    {   
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            _moveSpeed = _fastSpeed;
+        }
+        else
+        {
+            _moveSpeed = _normalSpeed;
+        }
+
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+        {
+            _newPosition += (transform.forward * _moveSpeed);
+        }
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+        {
+            _newPosition += (transform.forward * -_moveSpeed);
+        }
+        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
+        {
+            _newPosition += (transform.right * -_moveSpeed);
+        }
+        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow))
+        {
+            _newPosition += (transform.right * _moveSpeed);
+        }
+
+        transform.position = Vector3.Lerp(transform.position, _newPosition, Time.deltaTime * _moveTime);
+    }
+
+
 }

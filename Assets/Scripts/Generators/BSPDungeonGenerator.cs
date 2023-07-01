@@ -22,12 +22,6 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         _numberOfRooms = CalculateNumberOfRooms();
     }
 
-    private int CalculateNumberOfRooms()
-    {
-        //Calculate the number of aproximate number of rooms based on the room density
-        return (int)(_size.x * _size.y * _roomDensity / 4);
-    }
-
 
 
     public void Generate()
@@ -39,7 +33,46 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         BinaryDivision(_numberOfRooms);
     }
 
-    public void SetBorders()
+    public void Build()
+    {
+        for (int i = 0; i < _size.x; i++)
+        {
+            for (int j = 0; j < _size.y; j++)
+            {
+                var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
+                var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
+                GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
+                roomInstance.name = "Room " + i + " " + j;
+                roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
+                roomInstance.transform.SetParent(_spawnLocation.transform, false);
+            }
+        }
+    }
+
+    public void Destroy()
+    {
+        foreach (Transform child in _spawnLocation.transform) {
+            Destroy(child.gameObject);
+        }
+    }
+    public void SetWidth(int width)
+    {
+        _size.x = width;
+    }
+
+    public void SetHeight(int height)
+    {
+        _size.y = height;
+    }
+
+
+    private int CalculateNumberOfRooms()
+    {
+        //Calculate the number of aproximate number of rooms based on the room density
+        return (int)(_size.x * _size.y * _roomDensity / 4);
+    }
+
+    private void SetBorders()
     {
         //Creates the borders of the board
         EmptyWalls();
@@ -65,7 +98,11 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
        
     }
 
-    public void EmptyWalls()
+    
+
+
+
+    private void EmptyWalls()
     {
         for (int i = 0; i < _size.x; i++)
         {
@@ -79,7 +116,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
-    public void BinaryDivision(int _numberOfRooms)
+    private void BinaryDivision(int _numberOfRooms)
     {
         /*
             1. Choose direction (vertical or horizontal) 50/50
@@ -179,38 +216,4 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
 
     }
-
-    
-    public void Build()
-    {
-        for (int i = 0; i < _size.x; i++)
-        {
-            for (int j = 0; j < _size.y; j++)
-            {
-                var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
-                var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
-                GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
-                roomInstance.name = "Room " + i + " " + j;
-                roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
-                roomInstance.transform.SetParent(_spawnLocation.transform, false);
-            }
-        }
-    }
-
-    public void Destroy()
-    {
-        foreach (Transform child in _spawnLocation.transform) {
-            Destroy(child.gameObject);
-        }
-    }
-    public void SetWidth(int width)
-    {
-        _size.x = width;
-    }
-
-    public void SetHeight(int height)
-    {
-        _size.y = height;
-    }
-
 }
