@@ -6,7 +6,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
 {
     //First generate corridors, then generate rooms.
     private Vector2 _size;
-    private int _numberOfRooms;
+    private int _levels;
     private float _roomDensity;
     private Board _board;
     private GameObject _spawnLocation;
@@ -18,19 +18,14 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         _size = new Vector2(10, 10);
         _rooms = rooms;
         _spawnLocation = spawnLocation;
-        _roomDensity = 0.3f;
-        _numberOfRooms = CalculateNumberOfRooms();
+        _levels = 3;
     }
-
-
 
     public void Generate()
     {
         _board = new Board(_size);
-        _numberOfRooms = CalculateNumberOfRooms();
-        Debug.Log("n=" + _numberOfRooms);
         SetBorders();
-        BinaryDivision(_numberOfRooms);
+        BinaryDivision(0, 0, 0, (int)_size.x - 1, (int)_size.y - 1);
     }
 
     public void Build()
@@ -51,10 +46,12 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
 
     public void Destroy()
     {
-        foreach (Transform child in _spawnLocation.transform) {
+        foreach (Transform child in _spawnLocation.transform)
+        {
             Destroy(child.gameObject);
         }
     }
+
     public void SetWidth(int width)
     {
         _size.x = width;
@@ -63,13 +60,6 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     public void SetHeight(int height)
     {
         _size.y = height;
-    }
-
-
-    private int CalculateNumberOfRooms()
-    {
-        //Calculate the number of aproximate number of rooms based on the room density
-        return (int)(_size.x * _size.y * _roomDensity / 4);
     }
 
     private void SetBorders()
@@ -83,24 +73,22 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
                 if (i == 0)
                 {
                     _board.GetBoard()[i][j].SetStatus(0, false);
-                }if (i == _size.x - 1)
+                }
+                if (i == _size.x - 1)
                 {
                     _board.GetBoard()[i][j].SetStatus(1, false);
-                }if (j == 0)
+                }
+                if (j == 0)
                 {
                     _board.GetBoard()[i][j].SetStatus(3, false);
-                }if (j == _size.y - 1)
+                }
+                if (j == _size.y - 1)
                 {
                     _board.GetBoard()[i][j].SetStatus(2, false);
                 }
             }
         }
-       
     }
-
-    
-
-
 
     private void EmptyWalls()
     {
@@ -116,104 +104,65 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
-    private void BinaryDivision(int _numberOfRooms)
+    private void BinaryDivision(int currentLevel, int i0, int j0, int endI, int jn)
     {
-        /*
-            1. Choose direction (vertical or horizontal) 50/50
-            2. Choose a random point on the board on i axis (vertical) or j axis (horizontal) and random direction (left to right or right to left, top to bottom or bottom to top)
-            3. Create a wall on the axis until it encounters another wall
-            4. Repeat process _numberOfRooms times
-        */
-        int direction = UnityEngine.Random.Range(0, 2);
-        int verticalDirection = 0;
-        int horizontalDirection = 0;
-
-        for (int room = 0; room < _numberOfRooms; room++)
+        Debug.Log("Current level: " + currentLevel);
+        Debug.Log("i0: " + i0);
+        Debug.Log("j0: " + j0);
+        Debug.Log("endI: " + endI);
+        Debug.Log("jn: " + jn);
+        if (currentLevel == _levels)
         {
-            //Choose direction
-            int randomPoint;
-            //Choose random point
-            //Create wall
-            if (direction == 0)
+            return;
+        }
+        else
+        {
+            int randomDirection = UnityEngine.Random.Range(0, 2);
+            bool collision = false;
+            //0 = horizontal
+            //1 = vertical
+            if (randomDirection == 0)
             {
-                //Horizontal
-                randomPoint = UnityEngine.Random.Range(2, (int)_size.y - 2);
-                Debug.Log(randomPoint);
-                if (verticalDirection == 0)
+                int j = j0;
+                int randomWall = UnityEngine.Random.Range(1, (endI - i0) - 1);
+                Debug.Log("Random wall: " + randomWall);
+                while (j <= jn && !collision)
                 {
-                    // Left to right
-                    for (int j = 0; j < _size.x; j++)
-                    {
-                        Debug.Log(randomPoint + " " + j);
-                        _board.GetBoard()[randomPoint][j].SetStatus(1, false);
-                        if (j == _size.x - 1 || _board.GetBoard()[randomPoint][j + 1].GetStatus()[3] == false)
-                        {
-                            int randomWall = UnityEngine.Random.Range(0, j);
-                            _board.GetBoard()[randomPoint][randomWall].SetStatus(1, true);
-                            break;
-                        }
-                    }
-                    verticalDirection = 1;
+                    Debug.Log("j: " + j);
+                    _board.GetBoard()[randomWall][j].SetStatus(1, false);
+                    collision = j != jn && !_board.GetBoard()[randomWall][j + 1].GetStatus()[3];
+                    j++;
+                    Debug.Log(j + "<=" + jn + "=" + (j <= jn));
                 }
-                else
-                {
-                    //Right to left
-                    for (int j = (int)_size.x - 1; j >= 0; j--)
-                    {
-                        Debug.Log(randomPoint + " " + j);
-                        _board.GetBoard()[randomPoint][j].SetStatus(1, false);
-                        if (j == 0 || _board.GetBoard()[randomPoint][j - 1].GetStatus()[3] == false)
-                        {
-                            int randomWall = UnityEngine.Random.Range(j, (int)_size.x);
-                            _board.GetBoard()[randomPoint][randomWall].SetStatus(1, true);
-                            break;
-                        }
-                    }
-                    verticalDirection = 0;
-                }
-                direction = 1;
+                //Open one of the walls
+                int randomEntrance = UnityEngine.Random.Range(j0 + 1, jn - 1);
+                _board.GetBoard()[randomWall][randomEntrance].SetStatus(1, true);
+                //Upper half
+                BinaryDivision(currentLevel + 1, i0, j0, randomWall, (j-1));
+                //Lower half
+                BinaryDivision(currentLevel + 1, randomWall, j0, endI, (j-1));
             }
             else
             {
-                //Vertical
-                randomPoint = UnityEngine.Random.Range(2, (int)_size.x - 2);
-                Debug.Log(randomPoint);
-                int randomDirection = UnityEngine.Random.Range(0, 2);
-                if (horizontalDirection == 0)
+                int i = i0;
+                int randomWall = UnityEngine.Random.Range(1, (jn - j0) - 1);
+                Debug.Log("Random wall: " + randomWall);
+                while (i <= endI && !collision)
                 {
-                    // Top to bottom
-                    for (int j = 0; j < _size.y; j++)
-                    {
-                        Debug.Log(j + " " + randomPoint);
-                        _board.GetBoard()[j][randomPoint].SetStatus(2, false);
-                        if (j == _size.y - 1 || _board.GetBoard()[j + 1][randomPoint].GetStatus()[0] == false)
-                        {
-                            int randomWall = UnityEngine.Random.Range(0, j);
-                            _board.GetBoard()[randomWall][randomPoint].SetStatus(2, true);
-                            break;
-                        }
-                    }
-                    horizontalDirection = 1;
+                    Debug.Log("i: " + i);
+                    _board.GetBoard()[i][randomWall].SetStatus(3, false);
+                    collision = i != endI && !_board.GetBoard()[i][randomWall].GetStatus()[1];
+                    i++;
                 }
-                else
-                {
-                    //Bottom to top
-                    for (int j = (int)_size.y - 1; j >= 0; j--)
-                    {
-                        Debug.Log(j + " " + randomPoint);
-                        _board.GetBoard()[j][randomPoint].SetStatus(2, false);
-                        if (j == 0 || _board.GetBoard()[j - 1][randomPoint].GetStatus()[0] == false)
-                        {
-                            int randomWall = UnityEngine.Random.Range(j, (int)_size.y);
-                            _board.GetBoard()[randomWall][randomPoint].SetStatus(2, true);
-                            break;
-                        }
-                    }
-                    horizontalDirection = 0;
-                }
-                direction = 0;
+                //Open one of the walls
+                int randomEntrance = UnityEngine.Random.Range(i0 + 1, endI - 1);
+                _board.GetBoard()[randomEntrance][randomWall].SetStatus(3, true);
+                //Left half
+                BinaryDivision(currentLevel + 1, i0, j0, i, randomWall);
+                //Right half
+                BinaryDivision(currentLevel + 1, i0, randomWall, i, jn);
             }
         }
-
     }
+
 }
