@@ -82,7 +82,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     private void SetBorders(Board board)
     {
         //Creates the borders of the board
-        EmptyWalls();
+        EmptyWalls(board);
         for (int i = 0; i < board.GetSize().x; i++)
         {
             for (int j = 0; j < board.GetSize().y; j++)
@@ -107,16 +107,16 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
-    private void EmptyWalls()
+    private void EmptyWalls(Board board)
     {
-        for (int i = 0; i < _size.x; i++)
+        for (int i = 0; i < board.GetSize().x; i++)
         {
-            for (int j = 0; j < _size.y; j++)
+            for (int j = 0; j < board.GetSize().y; j++)
             {
-                _board.GetBoard()[i][j].SetStatus(0, true);
-                _board.GetBoard()[i][j].SetStatus(1, true);
-                _board.GetBoard()[i][j].SetStatus(2, true);
-                _board.GetBoard()[i][j].SetStatus(3, true);
+                board.GetBoard()[i][j].SetStatus(0, true);
+                board.GetBoard()[i][j].SetStatus(1, true);
+                board.GetBoard()[i][j].SetStatus(2, true);
+                board.GetBoard()[i][j].SetStatus(3, true);
             }
         }
     }
@@ -142,7 +142,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
                         Debug.Log("Splitting vertically");
                         SplitVertical(currentRoom, minHeight, minWidth, rooms);
                     }
-                    else
+                    else if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight)
                     {
                         _roomList.Add(currentRoom);
                         Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
@@ -160,7 +160,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
                         Debug.Log("Splitting horizontally");
                         SplitHorizontal(currentRoom, minHeight, minWidth, rooms);
                     }
-                    else
+                    else if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight)
                     {
                         _roomList.Add(currentRoom);
                         Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
