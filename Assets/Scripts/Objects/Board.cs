@@ -66,5 +66,10 @@ public class Board
         return neighbors;
     }
 
+    public Vector2 GetSize()
+    {
+        return _size;
+    }
+
     
 }

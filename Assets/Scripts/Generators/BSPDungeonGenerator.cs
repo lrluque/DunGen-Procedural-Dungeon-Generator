@@ -11,37 +11,54 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     private Board _board;
     private GameObject _spawnLocation;
     private GameObject[] _rooms;
-    private DepthFirstSearchGenerator _depthFirstSearchGenerator;
+    private List<Board> _roomList;
+    private int _minHeight, _minWidth;
 
     public BSPDungeonGenerator(GameObject[] rooms, GameObject spawnLocation)
     {
         _size = new Vector2(10, 10);
+        _roomList = new List<Board>();
+        _minHeight = 3;
+        _minWidth = 3;
         _rooms = rooms;
         _spawnLocation = spawnLocation;
-        _levels = 3;
     }
 
     public void Generate()
     {
+        _roomList.Clear();
         _board = new Board(_size);
-        SetBorders();
-        BinaryDivision(0, 0, 0, (int)_size.x - 1, (int)_size.y - 1);
+        BinaryDivision(_board, _minHeight, _minWidth);
+        Debug.Log("Number of rooms: " + _roomList.Count);
+        Build();
     }
 
     public void Build()
     {
-        for (int i = 0; i < _size.x; i++)
+        foreach (Board room in _roomList)
         {
-            for (int j = 0; j < _size.y; j++)
-            {
-                var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
-                var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
-                GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
-                roomInstance.name = "Room " + i + " " + j;
-                roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
-                roomInstance.transform.SetParent(_spawnLocation.transform, false);
-            }
+            SetBorders(room);
+            BuildRoom(room);
         }
+        
+    }
+
+    private void BuildRoom(Board room)
+    {
+        GameObject instanceOnSpawn = new GameObject();
+        instanceOnSpawn.transform.SetParent(_spawnLocation.transform, false);
+        for (int i = 0; i < room.GetSize().x; i++)
+            {
+                for (int j = 0; j < room.GetSize().y; j++)
+                {
+                    var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
+                    var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
+                    GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
+                    roomInstance.name = "Room " + i + " " + j;
+                    roomInstance.GetComponent<RoomManager>().UpdateRoom(room.GetBoard()[i][j].GetStatus());
+                    roomInstance.transform.SetParent(instanceOnSpawn.transform, false);
+                }
+            }
     }
 
     public void Destroy()
@@ -62,29 +79,29 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         _size.y = height;
     }
 
-    private void SetBorders()
+    private void SetBorders(Board board)
     {
         //Creates the borders of the board
         EmptyWalls();
-        for (int i = 0; i < _size.x; i++)
+        for (int i = 0; i < board.GetSize().x; i++)
         {
-            for (int j = 0; j < _size.y; j++)
+            for (int j = 0; j < board.GetSize().y; j++)
             {
                 if (i == 0)
                 {
-                    _board.GetBoard()[i][j].SetStatus(0, false);
+                    board.GetBoard()[i][j].SetStatus(0, false);
                 }
-                if (i == _size.x - 1)
+                if (i == board.GetSize().x - 1)
                 {
-                    _board.GetBoard()[i][j].SetStatus(1, false);
+                    board.GetBoard()[i][j].SetStatus(1, false);
                 }
                 if (j == 0)
                 {
-                    _board.GetBoard()[i][j].SetStatus(3, false);
+                    board.GetBoard()[i][j].SetStatus(3, false);
                 }
-                if (j == _size.y - 1)
+                if (j == board.GetSize().y - 1)
                 {
-                    _board.GetBoard()[i][j].SetStatus(2, false);
+                    board.GetBoard()[i][j].SetStatus(2, false);
                 }
             }
         }
@@ -104,65 +121,75 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
-    private void BinaryDivision(int currentLevel, int i0, int j0, int endI, int jn)
+    private void BinaryDivision(Board room, int minHeight, int minWidth)
     {
-        Debug.Log("Current level: " + currentLevel);
-        Debug.Log("i0: " + i0);
-        Debug.Log("j0: " + j0);
-        Debug.Log("endI: " + endI);
-        Debug.Log("jn: " + jn);
-        if (currentLevel == _levels)
+        Queue<Board> rooms = new Queue<Board>();
+        rooms.Enqueue(room);
+        while (rooms.Count > 0)
         {
-            return;
-        }
-        else
-        {
-            int randomDirection = UnityEngine.Random.Range(0, 2);
-            bool collision = false;
-            //0 = horizontal
-            //1 = vertical
-            if (randomDirection == 0)
-            {
-                int j = j0;
-                int randomWall = UnityEngine.Random.Range(1, (endI - i0) - 1);
-                Debug.Log("Random wall: " + randomWall);
-                while (j <= jn && !collision)
+            Debug.Log("Rooms left: " + rooms.Count);
+            Board currentRoom = rooms.Dequeue();
+            if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight){
+                if (Random.value > 0.5f)
                 {
-                    Debug.Log("j: " + j);
-                    _board.GetBoard()[randomWall][j].SetStatus(1, false);
-                    collision = j != jn && !_board.GetBoard()[randomWall][j + 1].GetStatus()[3];
-                    j++;
-                    Debug.Log(j + "<=" + jn + "=" + (j <= jn));
+                    if (currentRoom.GetSize().y > 2 * minHeight)
+                    {
+                        Debug.Log("Splitting horizontally");
+                        SplitHorizontal(currentRoom, minHeight, minWidth, rooms);
+                    }
+                    else if (currentRoom.GetSize().x > 2 * minWidth)
+                    {
+                        Debug.Log("Splitting vertically");
+                        SplitVertical(currentRoom, minHeight, minWidth, rooms);
+                    }
+                    else
+                    {
+                        _roomList.Add(currentRoom);
+                        Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
+                    }
                 }
-                //Open one of the walls
-                int randomEntrance = UnityEngine.Random.Range(j0 + 1, jn - 1);
-                _board.GetBoard()[randomWall][randomEntrance].SetStatus(1, true);
-                //Upper half
-                BinaryDivision(currentLevel + 1, i0, j0, randomWall, (j-1));
-                //Lower half
-                BinaryDivision(currentLevel + 1, randomWall, j0, endI, (j-1));
-            }
-            else
-            {
-                int i = i0;
-                int randomWall = UnityEngine.Random.Range(1, (jn - j0) - 1);
-                Debug.Log("Random wall: " + randomWall);
-                while (i <= endI && !collision)
+                else
                 {
-                    Debug.Log("i: " + i);
-                    _board.GetBoard()[i][randomWall].SetStatus(3, false);
-                    collision = i != endI && !_board.GetBoard()[i][randomWall].GetStatus()[1];
-                    i++;
+                    if (currentRoom.GetSize().x > 2 * minWidth)
+                    {
+                        Debug.Log("Splitting vertically");
+                        SplitVertical(currentRoom, minHeight, minWidth, rooms);
+                    }
+                    else if (currentRoom.GetSize().y > 2 * minHeight)
+                    {
+                        Debug.Log("Splitting horizontally");
+                        SplitHorizontal(currentRoom, minHeight, minWidth, rooms);
+                    }
+                    else
+                    {
+                        _roomList.Add(currentRoom);
+                        Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
+                    }
                 }
-                //Open one of the walls
-                int randomEntrance = UnityEngine.Random.Range(i0 + 1, endI - 1);
-                _board.GetBoard()[randomEntrance][randomWall].SetStatus(3, true);
-                //Left half
-                BinaryDivision(currentLevel + 1, i0, j0, i, randomWall);
-                //Right half
-                BinaryDivision(currentLevel + 1, i0, randomWall, i, jn);
             }
         }
+
     }
+
+    private void SplitHorizontal(Board room, int minHeight, int minWidth, Queue<Board> roomsQueue)
+    {
+        int split = Random.Range(minHeight, (int)room.GetSize().y - minHeight);
+        Board room1 = new Board(new Vector2(room.GetSize().x, split));
+        Board room2 = new Board(new Vector2(room.GetSize().x, room.GetSize().y - split));
+        roomsQueue.Enqueue(room1);
+        roomsQueue.Enqueue(room2);
+    }
+
+    private void SplitVertical(Board room, int minHeight, int minWidth, Queue<Board> roomsQueue)
+    {
+        int split = Random.Range(minWidth, (int)room.GetSize().x - minWidth);
+        Board room1 = new Board(new Vector2(split, room.GetSize().y));
+        Board room2 = new Board(new Vector2(room.GetSize().x - split, room.GetSize().y));
+        roomsQueue.Enqueue(room1);
+        roomsQueue.Enqueue(room2);
+    }
+
+
+
 
 }
