@@ -8,7 +8,7 @@ public class AppManager : MonoBehaviour, iObserver
 {
 
     [SerializeField] private Generator _activeGenerator;
-    [SerializeField] private Slider _sliderWidth, _sliderHeight;
+    [SerializeField] private Slider _sliderWidth, _sliderHeight, _sliderOffset;
     [SerializeField] private TMP_Dropdown _dropdown;
     [SerializeField] private GameObject _spawnLocation;
     [SerializeField] private GameObject[] _rooms;

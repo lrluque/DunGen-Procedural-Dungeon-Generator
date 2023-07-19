@@ -13,6 +13,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     private GameObject[] _rooms;
     private List<Board> _roomList;
     private int _minHeight, _minWidth;
+    private int _offset;
 
     public BSPDungeonGenerator(GameObject[] rooms, GameObject spawnLocation)
     {
@@ -22,6 +23,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         _minWidth = 3;
         _rooms = rooms;
         _spawnLocation = spawnLocation;
+        _offset = 5;
     }
 
     public void Generate()
@@ -29,37 +31,61 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         _roomList.Clear();
         _board = new Board(_size);
         BinaryDivision(_board, _minHeight, _minWidth);
-        Debug.Log("Number of rooms: " + _roomList.Count);
-        Build();
     }
 
     public void Build()
     {
+        Vector3 roomPosition = new Vector3(0, 0, 0);
+        Board previousRoom = null;
         foreach (Board room in _roomList)
         {
+            roomPosition += GetSpawnCoordinates(room, previousRoom);
             SetBorders(room);
-            BuildRoom(room);
-        }
-        
+            BuildRoom(room, roomPosition);
+            previousRoom = room;
+        }  
     }
 
-    private void BuildRoom(Board room)
+    private Vector3 GetSpawnCoordinates(Board room, Board previousRoom)
     {
-        GameObject instanceOnSpawn = new GameObject();
-        instanceOnSpawn.transform.SetParent(_spawnLocation.transform, false);
+        Vector3 roomPosition = new Vector3(0, 0, 0);
+        if (previousRoom != null)
+            {
+            if (Random.value > 0.5f)
+            {
+                //Builds the room below the previous room
+                roomPosition = new Vector3(0, 0, previousRoom.GetSize().y * -3.6f - _offset);
+            }
+            else
+            {
+                //Builds the room to the right of the previous room
+                roomPosition = new Vector3((room.GetSize().x) * -3.6f - _offset, 0, 0);
+            }
+        }
+        return roomPosition;
+    }
+
+    private void BuildRoom(Board room, Vector3 roomPosition)
+    {
+        GameObject roomInstance = new GameObject();
+        roomInstance.name = "Room";
+        roomInstance.transform.SetParent(_spawnLocation.transform, false);
+        roomInstance.transform.localPosition = roomPosition + new Vector3(room.GetSize().x * 3.6f, 0, 0);
         for (int i = 0; i < room.GetSize().x; i++)
             {
                 for (int j = 0; j < room.GetSize().y; j++)
                 {
                     var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
                     var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
-                    GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
-                    roomInstance.name = "Room " + i + " " + j;
-                    roomInstance.GetComponent<RoomManager>().UpdateRoom(room.GetBoard()[i][j].GetStatus());
-                    roomInstance.transform.SetParent(instanceOnSpawn.transform, false);
+                    GameObject roomCell = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
+                    roomCell.name = "RoomCell " + i + " " + j;
+                    roomCell.GetComponent<RoomManager>().UpdateRoom(room.GetBoard()[i][j].GetStatus());
+                    roomCell.transform.SetParent(roomInstance.transform, false);
                 }
+
             }
     }
+
 
     public void Destroy()
     {
@@ -127,43 +153,36 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         rooms.Enqueue(room);
         while (rooms.Count > 0)
         {
-            Debug.Log("Rooms left: " + rooms.Count);
             Board currentRoom = rooms.Dequeue();
             if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight){
                 if (Random.value > 0.5f)
                 {
                     if (currentRoom.GetSize().y > 2 * minHeight)
                     {
-                        Debug.Log("Splitting horizontally");
                         SplitHorizontal(currentRoom, minHeight, minWidth, rooms);
                     }
                     else if (currentRoom.GetSize().x > 2 * minWidth)
                     {
-                        Debug.Log("Splitting vertically");
                         SplitVertical(currentRoom, minHeight, minWidth, rooms);
                     }
                     else if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight)
                     {
                         _roomList.Add(currentRoom);
-                        Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
                     }
                 }
                 else
                 {
                     if (currentRoom.GetSize().x > 2 * minWidth)
                     {
-                        Debug.Log("Splitting vertically");
                         SplitVertical(currentRoom, minHeight, minWidth, rooms);
                     }
                     else if (currentRoom.GetSize().y > 2 * minHeight)
                     {
-                        Debug.Log("Splitting horizontally");
                         SplitHorizontal(currentRoom, minHeight, minWidth, rooms);
                     }
                     else if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight)
                     {
                         _roomList.Add(currentRoom);
-                        Debug.Log("Room added with size: " + currentRoom.GetSize().x + " " + currentRoom.GetSize().y);
                     }
                 }
             }
