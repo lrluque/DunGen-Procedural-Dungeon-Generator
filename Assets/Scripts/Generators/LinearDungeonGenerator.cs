@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BSPDungeonGenerator : MonoBehaviour, Generator
+public class LinearDungeonGenerator : MonoBehaviour, Generator
 {
     private Vector2 _size = new Vector2(10, 10);
     private int _minHeight = 3;
@@ -12,7 +12,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     private List<GameObject> _roomInstances = new List<GameObject>();
     private List<Board> _roomList = new List<Board>();
 
-    public BSPDungeonGenerator(GameObject[] cells, GameObject spawnLocation)
+    public LinearDungeonGenerator(GameObject[] cells, GameObject spawnLocation)
     {
         _cells = cells;
         _spawnLocation = spawnLocation;
@@ -29,24 +29,57 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
     public void Build()
     {
         Vector3 builderPosition = Vector3.zero;
-        Board previousRoom = null;
+        string previousDirection = "";
         int randomCell = -1;
         foreach (Board room in _roomList)
         {
-            if (_roomList.IndexOf(room) != 0)
-            {
-                randomCell = (int)Random.Range(0, room.GetSize().y);
-                builderPosition += new Vector3(0, 0, randomCell * 3.6f);
-            }
+            //First we build a room. If previousDirection == "left" we open a random cell in the right, if previousDirection == "bottom" we open a random cell in the top. 
+            //We also move it vertically or horizontally depending on the previous direction
             SetBorders(room);
-            BuildRoom(room, builderPosition, randomCell);
-            randomCell = (int)Random.Range(0, room.GetSize().y);
-            builderPosition -= new Vector3(room.GetSize().x * 3.6f, 0, randomCell * 3.6f);
-            if (_roomList.IndexOf(room) != _roomList.Count - 1)
+            BuildRoom(room, builderPosition);
+            if (previousDirection == "left")
             {
-                builderPosition = BuildCorridor(builderPosition);
-                _roomInstances[_roomList.IndexOf(room)].transform.Find("RoomCell " + (room.GetSize().x - 1) + " " + randomCell).GetComponent<RoomManager>().SetWall(1, false);
+                randomCell = Random.Range(0, (int)room.GetSize().y);
+                //We open the entrance
+                _roomInstances[_roomInstances.Count - 1].transform.Find("RoomCell 0 " + randomCell).GetComponent<RoomManager>().SetWall(0, false);
+                //We move the actual room
+                builderPosition += new Vector3(0, 0, 3.6f * randomCell);
+                _roomInstances[_roomInstances.Count - 1].transform.localPosition += new Vector3(0, 0, 3.6f * randomCell);
             }
+            else if (previousDirection == "bottom")
+            {
+                randomCell = Random.Range(0, (int)room.GetSize().x);
+                //We open the entrance
+                _roomInstances[_roomInstances.Count - 1].transform.Find("RoomCell " + randomCell + " 0").GetComponent<RoomManager>().SetWall(3, false);
+                //We move the actual room
+                builderPosition += new Vector3(3.6f * randomCell, 0, 0);
+                _roomInstances[_roomInstances.Count - 1].transform.localPosition += new Vector3(3.6f * randomCell, 0, 0);
+            }
+            //If is the last room we do not build a corridor
+            if (room != _roomList[_roomList.Count - 1])
+                {
+                //We now build a corridor in a random direction, left or bottom and then select a random cell to build it
+                string direction = Random.value > 0.5f ? "left" : "bottom";
+                if (direction == "left")
+                {
+                    randomCell = Random.Range(0, (int)room.GetSize().y);
+                    builderPosition -= new Vector3(3.6f * (room.GetSize().x), 0, 3.6f * randomCell);
+                    builderPosition = BuildCorridor(builderPosition, direction);
+                    previousDirection = "left";
+                    //We set the entrance of the room to false
+                    _roomInstances[_roomInstances.Count - 1].transform.Find("RoomCell " + (room.GetSize().x - 1) + " " + randomCell).GetComponent<RoomManager>().SetWall(1, false);
+                }
+                else
+                {
+                    randomCell = Random.Range(0, (int)room.GetSize().x);
+                    builderPosition -= new Vector3(3.6f * randomCell, 0, 3.6f * (room.GetSize().y));
+                    builderPosition = BuildCorridor(builderPosition, direction);
+                    previousDirection = "bottom";
+                    //We set the entrance of the room to false
+                    _roomInstances[_roomInstances.Count - 1].transform.Find("RoomCell " + randomCell + " " + (room.GetSize().y - 1)).GetComponent<RoomManager>().SetWall(2, false);
+                }
+            }
+
         }
     }
 
@@ -109,7 +142,7 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
-    private Vector3 BuildCorridor(Vector3 builderPosition)
+    private Vector3 BuildCorridor(Vector3 builderPosition, string direction)
     {
         GameObject corridor = new GameObject
         {
@@ -121,18 +154,31 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         Vector3 lastPosition = new Vector3(builderPosition.x, builderPosition.y, builderPosition.z);
         for (int i = 0; i < corridorLength; i++)
         {
-            var randomOffset = Random.Range(0.001f, 0.004f);
-            GameObject roomCell = Instantiate(_cells[Random.Range(0, _cells.Length)], new Vector3(lastPosition.x + randomOffset, randomOffset, lastPosition.z + randomOffset), Quaternion.identity);
-            roomCell.GetComponent<RoomManager>().SetWall(0, false);
-            roomCell.GetComponent<RoomManager>().SetWall(1, false);
-            roomCell.name = "RoomCell " + i;
-            roomCell.transform.SetParent(corridor.transform, true);
-            lastPosition = new Vector3(lastPosition.x - 3.6f, 0, lastPosition.z);
+            if (direction == "left")
+            {
+                var randomOffset = Random.Range(0.001f, 0.004f);
+                GameObject roomCell = Instantiate(_cells[Random.Range(0, _cells.Length)], new Vector3(lastPosition.x + randomOffset, randomOffset, lastPosition.z + randomOffset), Quaternion.identity);
+                roomCell.GetComponent<RoomManager>().SetWall(0, false);
+                roomCell.GetComponent<RoomManager>().SetWall(1, false);
+                roomCell.name = "RoomCell " + i;
+                roomCell.transform.SetParent(corridor.transform, true);
+                lastPosition = new Vector3(lastPosition.x - 3.6f, 0, lastPosition.z);
+            }
+            else
+            {
+                var randomOffset = Random.Range(0.001f, 0.004f);
+                GameObject roomCell = Instantiate(_cells[Random.Range(0, _cells.Length)], new Vector3(lastPosition.x + randomOffset, randomOffset, lastPosition.z + randomOffset), Quaternion.identity);
+                roomCell.GetComponent<RoomManager>().SetWall(2, false);
+                roomCell.GetComponent<RoomManager>().SetWall(3, false);
+                roomCell.name = "RoomCell " + i;
+                roomCell.transform.SetParent(corridor.transform, true);
+                lastPosition = new Vector3(lastPosition.x, 0, lastPosition.z - 3.6f);
+            }
         }
         return lastPosition;
     }
 
-    private void BuildRoom(Board room, Vector3 roomPosition, int cellEntrance)
+    private void BuildRoom(Board room, Vector3 roomPosition)
     {
         GameObject roomInstance = new GameObject
         {
@@ -152,10 +198,6 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
             }
         }
         _roomInstances.Add(roomInstance);
-        if (cellEntrance != -1)
-        {
-            roomInstance.transform.Find("RoomCell 0 " + cellEntrance).GetComponent<RoomManager>().SetWall(0, false);
-        }
     }
 
     private void BinaryDivision(Board room, int minHeight, int minWidth)
