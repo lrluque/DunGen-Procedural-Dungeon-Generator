@@ -11,7 +11,7 @@ public class AppManager : MonoBehaviour, iObserver
     [SerializeField] private Slider _sliderWidth, _sliderHeight, _sliderOffset;
     [SerializeField] private TMP_Dropdown _dropdown;
     [SerializeField] private GameObject _spawnLocation;
-    [SerializeField] private GameObject[] _rooms;
+    [SerializeField] private GameObject[] _cells;
     [SerializeField] private Subject _inputManager;
 
     
@@ -22,7 +22,7 @@ public class AppManager : MonoBehaviour, iObserver
     void Start()
     {
         _inputManager.AddObserver(this);
-        _activeGenerator = new DepthFirstSearchGenerator(rooms: _rooms, spawnLocation: _spawnLocation);
+        _activeGenerator = new DepthFirstSearchGenerator(cells: _cells, spawnLocation: _spawnLocation);
         Generate();
     }
 
@@ -36,11 +36,11 @@ public class AppManager : MonoBehaviour, iObserver
     {
         if (_dropdown.value == 0)
         {
-            _activeGenerator = new DepthFirstSearchGenerator(rooms: _rooms, spawnLocation: _spawnLocation);
+            _activeGenerator = new DepthFirstSearchGenerator(cells: _cells, spawnLocation: _spawnLocation);
         }
         else if (_dropdown.value == 1)
         {
-            _activeGenerator = new BSPDungeonGenerator(rooms: _rooms, spawnLocation: _spawnLocation);
+            _activeGenerator = new BSPDungeonGenerator(cells: _cells, spawnLocation: _spawnLocation);
         }
     }
 

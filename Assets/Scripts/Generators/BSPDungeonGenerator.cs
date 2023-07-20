@@ -1,33 +1,26 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BSPDungeonGenerator : MonoBehaviour, Generator
 {
-    //First generate corridors, then generate rooms.
-    private Vector2 _size;
-    private int _levels;
-    private float _roomDensity;
+    private Vector2 _size = new Vector2(10, 10);
+    private int _minHeight = 3;
+    private int _minWidth = 3;
     private Board _board;
     private GameObject _spawnLocation;
-    private GameObject[] _rooms;
-    private List<Board> _roomList;
-    private int _minHeight, _minWidth;
-    private int _offset;
+    private GameObject[] _cells;
+    private List<GameObject> _roomInstances = new List<GameObject>();
+    private List<Board> _roomList = new List<Board>();
 
-    public BSPDungeonGenerator(GameObject[] rooms, GameObject spawnLocation)
+    public BSPDungeonGenerator(GameObject[] cells, GameObject spawnLocation)
     {
-        _size = new Vector2(10, 10);
-        _roomList = new List<Board>();
-        _minHeight = 3;
-        _minWidth = 3;
-        _rooms = rooms;
+        _cells = cells;
         _spawnLocation = spawnLocation;
-        _offset = 5;
     }
 
     public void Generate()
     {
+        _roomInstances.Clear();
         _roomList.Clear();
         _board = new Board(_size);
         BinaryDivision(_board, _minHeight, _minWidth);
@@ -35,57 +28,27 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
 
     public void Build()
     {
-        Vector3 roomPosition = new Vector3(0, 0, 0);
+        Vector3 builderPosition = Vector3.zero;
         Board previousRoom = null;
+        int randomCell = -1;
         foreach (Board room in _roomList)
         {
-            roomPosition += GetSpawnCoordinates(room, previousRoom);
-            SetBorders(room);
-            BuildRoom(room, roomPosition);
-            previousRoom = room;
-        }  
-    }
-
-    private Vector3 GetSpawnCoordinates(Board room, Board previousRoom)
-    {
-        Vector3 roomPosition = new Vector3(0, 0, 0);
-        if (previousRoom != null)
+            if (_roomList.IndexOf(room) != 0)
             {
-            if (Random.value > 0.5f)
-            {
-                //Builds the room below the previous room
-                roomPosition = new Vector3(0, 0, previousRoom.GetSize().y * -3.6f - _offset);
+                randomCell = (int)Random.Range(0, room.GetSize().y);
+                builderPosition += new Vector3(0, 0, randomCell * 3.6f);
             }
-            else
+            SetBorders(room);
+            BuildRoom(room, builderPosition, randomCell);
+            randomCell = (int)Random.Range(0, room.GetSize().y);
+            builderPosition -= new Vector3(room.GetSize().x * 3.6f, 0, randomCell * 3.6f);
+            if (_roomList.IndexOf(room) != _roomList.Count - 1)
             {
-                //Builds the room to the right of the previous room
-                roomPosition = new Vector3((room.GetSize().x) * -3.6f - _offset, 0, 0);
+                builderPosition = BuildCorridor(builderPosition);
+                _roomInstances[_roomList.IndexOf(room)].transform.Find("RoomCell " + (room.GetSize().x - 1) + " " + randomCell).GetComponent<RoomManager>().SetWall(1, false);
             }
         }
-        return roomPosition;
     }
-
-    private void BuildRoom(Board room, Vector3 roomPosition)
-    {
-        GameObject roomInstance = new GameObject();
-        roomInstance.name = "Room";
-        roomInstance.transform.SetParent(_spawnLocation.transform, false);
-        roomInstance.transform.localPosition = roomPosition + new Vector3(room.GetSize().x * 3.6f, 0, 0);
-        for (int i = 0; i < room.GetSize().x; i++)
-            {
-                for (int j = 0; j < room.GetSize().y; j++)
-                {
-                    var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
-                    var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
-                    GameObject roomCell = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
-                    roomCell.name = "RoomCell " + i + " " + j;
-                    roomCell.GetComponent<RoomManager>().UpdateRoom(room.GetBoard()[i][j].GetStatus());
-                    roomCell.transform.SetParent(roomInstance.transform, false);
-                }
-
-            }
-    }
-
 
     public void Destroy()
     {
@@ -107,7 +70,6 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
 
     private void SetBorders(Board board)
     {
-        //Creates the borders of the board
         EmptyWalls(board);
         for (int i = 0; i < board.GetSize().x; i++)
         {
@@ -147,6 +109,55 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         }
     }
 
+    private Vector3 BuildCorridor(Vector3 builderPosition)
+    {
+        GameObject corridor = new GameObject
+        {
+            name = "Corridor"
+        };
+        corridor.transform.SetParent(_spawnLocation.transform, false);
+        corridor.transform.localPosition = builderPosition;
+        int corridorLength = Random.Range(3, 10);
+        Vector3 lastPosition = new Vector3(builderPosition.x, builderPosition.y, builderPosition.z);
+        for (int i = 0; i < corridorLength; i++)
+        {
+            var randomOffset = Random.Range(0.001f, 0.004f);
+            GameObject roomCell = Instantiate(_cells[Random.Range(0, _cells.Length)], new Vector3(lastPosition.x + randomOffset, randomOffset, lastPosition.z + randomOffset), Quaternion.identity);
+            roomCell.GetComponent<RoomManager>().SetWall(0, false);
+            roomCell.GetComponent<RoomManager>().SetWall(1, false);
+            roomCell.name = "RoomCell " + i;
+            roomCell.transform.SetParent(corridor.transform, true);
+            lastPosition = new Vector3(lastPosition.x - 3.6f, 0, lastPosition.z);
+        }
+        return lastPosition;
+    }
+
+    private void BuildRoom(Board room, Vector3 roomPosition, int cellEntrance)
+    {
+        GameObject roomInstance = new GameObject
+        {
+            name = "Room"
+        };
+        roomInstance.transform.SetParent(_spawnLocation.transform, false);
+        roomInstance.transform.localPosition = roomPosition;
+        for (int i = 0; i < room.GetSize().x; i++)
+        {
+            for (int j = 0; j < room.GetSize().y; j++)
+            {
+                var randomOffset = Random.Range(0.001f, 0.004f);
+                GameObject roomCell = Instantiate(_cells[Random.Range(0, _cells.Length)], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
+                roomCell.name = "RoomCell " + i + " " + j;
+                roomCell.GetComponent<RoomManager>().UpdateRoom(room.GetBoard()[i][j].GetStatus());
+                roomCell.transform.SetParent(roomInstance.transform, false);
+            }
+        }
+        _roomInstances.Add(roomInstance);
+        if (cellEntrance != -1)
+        {
+            roomInstance.transform.Find("RoomCell 0 " + cellEntrance).GetComponent<RoomManager>().SetWall(0, false);
+        }
+    }
+
     private void BinaryDivision(Board room, int minHeight, int minWidth)
     {
         Queue<Board> rooms = new Queue<Board>();
@@ -154,7 +165,8 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         while (rooms.Count > 0)
         {
             Board currentRoom = rooms.Dequeue();
-            if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight){
+            if (currentRoom.GetSize().x > minWidth && currentRoom.GetSize().y > minHeight)
+            {
                 if (Random.value > 0.5f)
                 {
                     if (currentRoom.GetSize().y > 2 * minHeight)
@@ -187,7 +199,6 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
                 }
             }
         }
-
     }
 
     private void SplitHorizontal(Board room, int minHeight, int minWidth, Queue<Board> roomsQueue)
@@ -207,8 +218,4 @@ public class BSPDungeonGenerator : MonoBehaviour, Generator
         roomsQueue.Enqueue(room1);
         roomsQueue.Enqueue(room2);
     }
-
-
-
-
 }

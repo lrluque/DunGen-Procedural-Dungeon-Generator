@@ -6,13 +6,13 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
 {
     private Vector2 _size;
     private Board _board;
-    private GameObject[] _rooms;
+    private GameObject[] _cells;
     private GameObject _spawnLocation;
 
-    public DepthFirstSearchGenerator(GameObject[] rooms, GameObject spawnLocation)
+    public DepthFirstSearchGenerator(GameObject[] cells, GameObject spawnLocation)
     {
         _size = new Vector2(10, 10);
-        _rooms = rooms;
+        _cells = cells;
         _spawnLocation = spawnLocation;
     }
 
@@ -79,8 +79,7 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
                 if (_board.GetBoard()[i][j].GetVisited())
                 {
                     var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
-                    var randomRoom = UnityEngine.Random.Range(0, _rooms.Length);
-                    GameObject roomInstance = Instantiate(_rooms[randomRoom], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
+                    GameObject roomInstance = Instantiate(_cells[UnityEngine.Random.Range(0, _cells.Length)], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
                     roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
                     roomInstance.transform.SetParent(_spawnLocation.transform, false);
                 }

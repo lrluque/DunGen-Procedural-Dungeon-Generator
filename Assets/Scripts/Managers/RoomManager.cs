@@ -18,4 +18,9 @@ public class RoomManager : MonoBehaviour
             walls[i].SetActive(!status[i]);
         }
     }
+
+    public void SetWall(int index, bool status)
+    {
+        walls[index].SetActive(status);
+    }
 }
