@@ -2,11 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LinearDungeonGenerator : MonoBehaviour, Generator
+public class NonLinearDungeonGenerator : MonoBehaviour, Generator
 {
+    [SerializeField] 
     private Vector2 _size = new Vector2(10, 10);
+    [SerializeField]
     private int _minHeight = 3;
+    [SerializeField]
     private int _minWidth = 3;
+    [SerializeField]
     private GameObject[] _cells;
 
 
@@ -17,7 +21,7 @@ public class LinearDungeonGenerator : MonoBehaviour, Generator
     private List<GameObject> _roomInstances = new List<GameObject>(); //This list will contain all the rooms after they are built
 
 
-    public LinearDungeonGenerator(GameObject[] cells, GameObject dungeon)
+    public NonLinearDungeonGenerator(GameObject[] cells, GameObject dungeon)
     {
         _cells = cells;
         _dungeon = dungeon;

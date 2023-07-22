@@ -7,13 +7,13 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
     private Vector2 _size;
     private Board _board;
     private GameObject[] _cells;
-    private GameObject _spawnLocation;
+    private GameObject _dungeon;
 
-    public DepthFirstSearchGenerator(GameObject[] cells, GameObject spawnLocation)
+    public DepthFirstSearchGenerator(GameObject[] cells, GameObject dungeon)
     {
         _size = new Vector2(10, 10);
         _cells = cells;
-        _spawnLocation = spawnLocation;
+        _dungeon = dungeon;
     }
 
     public void Generate()
@@ -81,7 +81,7 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
                     var randomOffset = UnityEngine.Random.Range(0.001f, 0.004f);
                     GameObject roomInstance = Instantiate(_cells[UnityEngine.Random.Range(0, _cells.Length)], new Vector3(-3.6f * i + randomOffset, randomOffset, -3.6f * j + randomOffset), Quaternion.identity);
                     roomInstance.GetComponent<RoomManager>().UpdateRoom(_board.GetBoard()[i][j].GetStatus());
-                    roomInstance.transform.SetParent(_spawnLocation.transform, false);
+                    roomInstance.transform.SetParent(_dungeon.transform, false);
                 }
             }
         }
@@ -89,7 +89,7 @@ public class DepthFirstSearchGenerator : MonoBehaviour, Generator
 
     public void Destroy()
     {
-        foreach (Transform child in _spawnLocation.transform) {
+        foreach (Transform child in _dungeon.transform) {
             Destroy(child.gameObject);
         }
     }
