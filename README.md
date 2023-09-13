@@ -6,5 +6,5 @@ DunGen is a simple dungeon generator designed for developers seeking a simple so
 DunGen utilizes different algorithms to generate simple but unique dungeons, currently beign available only maze-like dungeons and lineal dungeons. With DunGen, developers can easily integrate dungeon generation into their applications, games, 
 or educational projects for free. The intuitive interface and customizable features make it accessible for developers of all skill levels to generate dungeons effortlessly.
 
-![Video preview](https://youtu.be/nTQUwghvy5Q)
+![Video preview](https://www.youtube.com/watch?v=3PWZzDZG2DA)
 
