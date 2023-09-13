@@ -1,6 +1,6 @@
 # DunGen Procedural Dungeon Generator
 
-![DunGen_Logo](https://github.com/lrluque/DunGen-Procedural-Dungeon-Generator/assets/16742563/1e84270d-362a-4063-85e6-742649de98f3)
+![DunGen_Logo](https://github.com/lrluque/DunGen-Procedural-Dungeon-Generator/blob/master/Assets/Images/DunGen_Logo.png)
 
 DunGen is a simple dungeon generator designed for developers seeking a simple solution to create random dungeons. By inputting the desired parameters, 
 DunGen utilizes different algorithms to generate simple but unique dungeons, currently beign available only maze-like dungeons and lineal dungeons. With DunGen, developers can easily integrate dungeon generation into their applications, games, 
